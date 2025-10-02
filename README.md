@@ -179,7 +179,7 @@ The application runs in a loop until the user chooses to exit.
 - 🔧 Implemented **modular practices** in a Node.js CLI application  
 - 💾 Built a **CRUD system without a database**, using JSON file persistence  
 - 🧠 Focused on **algorithmic logic** and data handling, not UI/Frontend  
-- 🧰 Migrated from **procedural C++ (TXT storage)** → **modular JavaScript (JSON storage)**  
+- 🧰 Migrated from **procedural C++ (TXT storage)** into **modular JavaScript (JSON storage)**  
 - 📁 Added features: **backup system** and **deletion logs with timestamp**  
 - ✅ Finished with clean documentation, maintainable structure, and extensible design  
 
@@ -192,7 +192,6 @@ The application runs in a loop until the user chooses to exit.
 | 🔒 Add login system & user access rights | ⏺️ ToDo |
 | 🧾 Export employee data to CSV/Excel     | ⏺️ ToDo |
 | 🌐 Migrate backend to Express + MongoDB  | ⏺️ ToDo |
-| 📦 Publish as a global CLI via `npm`     | ⏺️ ToDo |
 | 🧪 Add unit testing with Jest            | ⏺️ ToDo |
 
 > "These are planned features for future versions"
