@@ -51,7 +51,7 @@ This Node.js project is a **refactored and modernized version** of my previous C
 
 ### 1. **Clone this repository**
 ```
-git clone https://github.com/Nekonepan/Employee-Data-Application-Project-JavaScript-based-node.js-.git
+git clone https://github.com/Nekonepan/Employee-Data-Application-Project-JavaScript-based-node.js.git
 cd Employee-Data-Application-Project-JavaScript-based-node.js
 ```
 ### 2. **Install dependencies**
