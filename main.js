@@ -1,6 +1,10 @@
 const inquirer = require("inquirer");
 const fs = require("fs");
 
+const connectDB = require("./config/db");
+console.log("App started");
+connectDB();
+
 const file_path = "data/data-karyawan.json";
 const backup_path = "backup/data-karyawan-backup.json";
 const log_path = "logs/data-terhapus.json";
