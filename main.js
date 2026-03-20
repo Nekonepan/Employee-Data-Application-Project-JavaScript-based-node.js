@@ -235,11 +235,18 @@ async function tambah_data() {
       return;
     }
 
-    data.push(...new_data);
-    write_data();
-    backup_data();
+    try {
+      await Employee.insertMany(new_data);
+      console.log(`${new_data.length} data berhasil disimpan ke database.`);
+    } catch (err) {
+      console.error("Gagal menyimpan ke database:", err.message);
+    }
 
-    console.log(`${new_data.length} data berhasil disimpan.`);
+    // data.push(...new_data);
+    // write_data();
+    // backup_data();
+
+    // console.log(`${new_data.length} data berhasil disimpan.`);
   } catch (err) {
     console.error("Terjadi kesalahan saat menambahkan data:", err.message);
   }
