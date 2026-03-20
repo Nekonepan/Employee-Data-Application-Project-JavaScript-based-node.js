@@ -76,21 +76,49 @@ function backup_data() {
 // ================================================================================================
 
 // TAMPILKAN DATA =================================================================================
-function tampilkan_data() {
-  if (!fs.existsSync(file_path)) {
-    console.log("File data tidak ditemukan!");
-    return;
-  }
+const Employee = require("./models/Employee");
 
-  if (data.length === 0) {
-    console.log("Data masih kosong!");
-    return;
-  }
+async function tampilkan_data() {
+  try {
+    const data = await Employee.find();
 
-  console.log("========== DATA KARYAWAN ==========");
-  console.log("Jumlah Data : ", data.length);
-  console.table(data);
+    if (data.length === 0) {
+      console.log("Data masih kosong!");
+      return;
+    }
+
+    console.log("========== DATA KARYAWAN ==========");
+    console.log("Jumlah Data : ", data.length);
+
+    // Mapping biar format sama kayak sebelumnya
+    const formatted = data.map((k) => ({
+      ID: k.ID,
+      NAMA: k.NAMA,
+      JABATAN: k.JABATAN,
+      TELP: k.TELP,
+    }));
+
+    console.table(formatted);
+  } catch (err) {
+    console.error("Gagal mengambil data:", err.message);
+  }
 }
+
+// function tampilkan_data() {
+//   if (!fs.existsSync(file_path)) {
+//     console.log("File data tidak ditemukan!");
+//     return;
+//   }
+
+//   if (data.length === 0) {
+//     console.log("Data masih kosong!");
+//     return;
+//   }
+
+//   console.log("========== DATA KARYAWAN ==========");
+//   console.log("Jumlah Data : ", data.length);
+//   console.table(data);
+// }
 // ================================================================================================
 
 // TAMBAH DATA BARU ===============================================================================
@@ -800,7 +828,7 @@ async function main_menu() {
     switch (menu) {
       case "1. Tampilkan Semua Data": {
         console.log("\n");
-        tampilkan_data();
+        await tampilkan_data();
         console.log("\n");
         break;
       }
