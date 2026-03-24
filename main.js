@@ -170,10 +170,10 @@ async function tambah_data() {
             }
             if (
               data.some(
-                (karyawan) => karyawan.ID.toUpperCase() === val.toUpperCase()
+                (karyawan) => karyawan.ID.toUpperCase() === val.toUpperCase(),
               ) ||
               new_data.some(
-                (karyawan) => karyawan.ID.toUpperCase() === val.toUpperCase()
+                (karyawan) => karyawan.ID.toUpperCase() === val.toUpperCase(),
               )
             ) {
               return "ID sudah digunakan!";
@@ -293,21 +293,42 @@ async function cari_data() {
     const keyword_lower = keyword.trim().toLowerCase();
     // ------------------------------------------------
 
+    const Employee = require("./models/Employee");
+
     let hasil = [];
+
     if (tipe === "ID") {
-      hasil = data.filter((karyawan) =>
-        karyawan.ID.toLowerCase().includes(keyword_lower)
-      );
+      hasil = await Employee.find({
+        ID: { $regex: keyword, $options: "i" },
+      });
     } else {
-      hasil = data.filter((karyawan) =>
-        karyawan.NAMA.toLowerCase().includes(keyword_lower)
-      );
+      hasil = await Employee.find({
+        NAMA: { $regex: keyword, $options: "i" },
+      });
     }
+
+    const formatted = hasil.map((k) => ({
+      ID: k.ID,
+      NAMA: k.NAMA,
+      JABATAN: k.JABATAN,
+      TELP: k.TELP,
+    }));
+
+    // let hasil = [];
+    // if (tipe === "ID") {
+    //   hasil = data.filter((karyawan) =>
+    //     karyawan.ID.toLowerCase().includes(keyword_lower)
+    //   );
+    // } else {
+    //   hasil = data.filter((karyawan) =>
+    //     karyawan.NAMA.toLowerCase().includes(keyword_lower)
+    //   );
+    // }
 
     if (hasil.length === 0) {
       console.log("Data tidak ditemukan.");
     } else {
-      console.table(hasil);
+      console.table(formatted);
     }
   } catch (err) {
     console.error("Terjadi kesalahan saat mencari data:", err.message);
@@ -338,11 +359,11 @@ async function sort_by_id() {
 
     if (arah === "Ascending (A-Z)") {
       data_sort.sort((a, b) =>
-        a.ID.toUpperCase().localeCompare(b.ID.toUpperCase())
+        a.ID.toUpperCase().localeCompare(b.ID.toUpperCase()),
       );
     } else {
       data_sort.sort((a, b) =>
-        b.ID.toUpperCase().localeCompare(a.ID.toUpperCase())
+        b.ID.toUpperCase().localeCompare(a.ID.toUpperCase()),
       );
     }
 
@@ -392,6 +413,8 @@ async function edit_data() {
     return;
   }
 
+  const Employee = require("./models/Employee");
+
   console.log("========== EDIT DATA KARYAWAN ==========");
 
   try {
@@ -421,9 +444,13 @@ async function edit_data() {
         },
       ]);
 
-      matches = data.filter(
-        (k) => k.ID.toLowerCase() === id_query.trim().toLowerCase()
-      );
+      matches = await Employee.find({
+        ID: id_query.trim().toUpperCase(),
+      });
+
+      // matches = data.filter(
+      //   (k) => k.ID.toLowerCase() === id_query.trim().toLowerCase()
+      // );
     } else {
       const { name_query } = await inquirer.prompt([
         {
@@ -440,7 +467,12 @@ async function edit_data() {
       ]);
 
       const key = name_query.trim().toLowerCase();
-      matches = data.filter((k) => k.NAMA.toLowerCase().includes(key));
+
+      matches = await Employee.find({
+        NAMA: { $regex: name_query, $options: "i" },
+      });
+
+      // matches = data.filter((k) => k.NAMA.toLowerCase().includes(key));
     }
 
     if (matches.length === 0) {
@@ -460,16 +492,23 @@ async function edit_data() {
       },
     ]);
 
-    const selected_index = data.findIndex((k) => k.ID === chosen);
+    const current = matches.find((k) => k.ID === chosen);
 
-    if (selected_index === -1) {
+    if (!current) {
       console.log("Data yang dipilih tidak ditemukan.");
       return;
     }
-
-    const current = data[selected_index];
     console.log("Data saat ini :");
-    console.table(current);
+
+    const formatted = [
+      {
+        ID: current.ID,
+        NAMA: current.NAMA,
+        JABATAN: current.JABATAN,
+        TELP: current.TELP,
+      },
+    ];
+    console.table(formatted);
 
     // INPUT EDIT DATA BARU ------------------------------------------------------------
     const { ID, NAMA, JABATAN, TELP } = await inquirer.prompt([
@@ -487,7 +526,7 @@ async function edit_data() {
           }
           const exists = data.some(
             (k, idx) =>
-              idx !== selected_index && k.ID.toLowerCase() === t.toLowerCase()
+              idx !== selected_index && k.ID.toLowerCase() === t.toLowerCase(),
           );
           if (exists) {
             return "ID sudah digunakan!";
@@ -531,7 +570,7 @@ async function edit_data() {
     };
 
     console.log("Data sebelumnya : \n");
-    console.log(console.table(current));
+    console.log(console.table(formatted));
 
     console.log("Data setelah di edit : \n");
     console.log(console.table([updated]));
@@ -546,15 +585,31 @@ async function edit_data() {
       return;
     }
 
-    data[selected_index] = {
-      ID: ID && ID.trim() ? ID.trim().toUpperCase() : current.ID,
-      NAMA: NAMA && NAMA.trim() ? NAMA.trim() : current.NAMA,
-      JABATAN: JABATAN && JABATAN.trim() ? JABATAN.trim() : current.JABATAN,
-      TELP: TELP && TELP.trim() ? TELP.trim() : current.TELP,
-    };
+    try {
+      await Employee.updateOne(
+        { ID: current.ID },
+        {
+          ID: updated.ID,
+          NAMA: updated.NAMA,
+          JABATAN: updated.JABATAN,
+          TELP: updated.TELP,
+        },
+      );
 
-    write_data();
-    backup_data();
+      console.log("Data karyawan berhasil diperbarui di database.");
+    } catch (err) {
+      console.error("Gagal update data:", err.message);
+    }
+
+    // data[selected_index] = {
+    //   ID: ID && ID.trim() ? ID.trim().toUpperCase() : current.ID,
+    //   NAMA: NAMA && NAMA.trim() ? NAMA.trim() : current.NAMA,
+    //   JABATAN: JABATAN && JABATAN.trim() ? JABATAN.trim() : current.JABATAN,
+    //   TELP: TELP && TELP.trim() ? TELP.trim() : current.TELP,
+    // };
+
+    // write_data();
+    // backup_data();
 
     console.log("Data karyawan berhasil diperbarui.");
   } catch (err) {
@@ -597,7 +652,7 @@ async function delete_data() {
 
       results = data.filter(
         (karyawan) =>
-          karyawan.ID.toLowerCase() === search_id.trim().toLowerCase()
+          karyawan.ID.toLowerCase() === search_id.trim().toLowerCase(),
       );
     } else {
       const { search_name } = await inquirer.prompt([
@@ -610,7 +665,7 @@ async function delete_data() {
       ]);
 
       results = data.filter((karyawan) =>
-        karyawan.NAMA.toLowerCase().includes(search_name.trim().toLowerCase())
+        karyawan.NAMA.toLowerCase().includes(search_name.trim().toLowerCase()),
       );
     }
 
@@ -628,12 +683,12 @@ async function delete_data() {
           name: "pilih",
           message: "Pilih data yang ingin dihapus:",
           choices: results.map(
-            (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}`
+            (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}`,
           ),
         },
       ]);
       target = results.find(
-        (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}` === pilih
+        (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}` === pilih,
       );
     } else {
       target = results[0];
@@ -727,7 +782,7 @@ function show_statistic() {
     Object.entries(per_jabatan).map(([jabatan, jumlah]) => ({
       Jabatan: jabatan,
       Jumlah: jumlah,
-    }))
+    })),
   );
   // --------------------------------------------------------
 
@@ -741,7 +796,7 @@ function show_statistic() {
     Object.entries(per_prefix).map(([prefix, jumlah]) => ({
       Prefix_ID: prefix,
       Jumlah: jumlah,
-    }))
+    })),
   );
   // ------------------------------------------------------
 }
