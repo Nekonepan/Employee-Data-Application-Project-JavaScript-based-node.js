@@ -524,13 +524,6 @@ async function edit_data() {
           if (!/^[A-Za-z0-9]+$/.test(t)) {
             return "ID hanya boleh huruf dan angka!";
           }
-          const exists = data.some(
-            (k, idx) =>
-              idx !== selected_index && k.ID.toLowerCase() === t.toLowerCase(),
-          );
-          if (exists) {
-            return "ID sudah digunakan!";
-          }
           return true;
         },
       },
