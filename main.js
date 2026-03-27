@@ -774,55 +774,99 @@ async function delete_data() {
 // ================================================================================================
 
 // MENAMPILKAN STATISTIK KARYAWAN =================================================================
-function show_statistic() {
-  if (!fs.existsSync(file_path)) {
-    console.log("File data tidak ditemukan!");
-    return;
-  }
+async function show_statistic() {
+  // if (!fs.existsSync(file_path)) {
+  //   console.log("File data tidak ditemukan!");
+  //   return;
+  // }
 
-  let data = read_data();
-  try {
-    const content = fs.readFileSync(file_path, "utf-8").trim();
-    data = content ? JSON.parse(content) : [];
-  } catch (err) {
-    console.error("Gagal membaca atau parsing file JSON:", err.message);
-    return;
-  }
+  // let data = read_data();
+  // try {
+  //   const content = fs.readFileSync(file_path, "utf-8").trim();
+  //   data = content ? JSON.parse(content) : [];
+  // } catch (err) {
+  //   console.error("Gagal membaca atau parsing file JSON:", err.message);
+  //   return;
+  // }
 
-  if (data.length === 0) {
-    console.log("Data masih kosong!");
-    return;
-  }
+  // if (data.length === 0) {
+  //   console.log("Data masih kosong!");
+  //   return;
+  // }
 
   console.log("========== STATISTIK DATA KARYAWAN ==========");
-  console.log("Total Data Karyawan:", data.length);
+  // console.log("Total Data Karyawan:", data.length);
+  
+  try {
+    const data = await Employee.find();
+
+    if (data.length === 0) {
+      console.log("Data masih kosong!");
+      return;
+    }
+
+    console.log("Total Data Karyawan:", data.length);
+
+    // STATISTIK PER JABATAN ----------------------------------
+    const per_jabatan = data.reduce((acc, k) => {
+      const jabatan = k.JABATAN.trim().toUpperCase();
+      acc[jabatan] = (acc[jabatan] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.table(
+      Object.entries(per_jabatan).map(([jabatan, jumlah]) => ({
+        Jabatan: jabatan,
+        Jumlah: jumlah,
+      })),
+    );
+    // --------------------------------------------------------
+
+    // STATISTIK PREFIX ID ----------------------------------
+    const per_prefix = data.reduce((acc, k) => {
+      const prefix = k.ID.trim().charAt(0).toUpperCase();
+      acc[prefix] = (acc[prefix] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.table(
+      Object.entries(per_prefix).map(([prefix, jumlah]) => ({
+        Prefix_ID: prefix,
+        Jumlah: jumlah,
+      })),
+    );
+    // ------------------------------------------------------
+
+  } catch {
+    console.error("Gagal mengambil statistik:", err.message);
+  }
 
   // STATISTIK PER JABATAN ----------------------------------
-  const per_jabatan = data.reduce((acc, k) => {
-    const jabatan = k.JABATAN.trim().toUpperCase();
-    acc[jabatan] = (acc[jabatan] || 0) + 1;
-    return acc;
-  }, {});
-  console.table(
-    Object.entries(per_jabatan).map(([jabatan, jumlah]) => ({
-      Jabatan: jabatan,
-      Jumlah: jumlah,
-    })),
-  );
+  // const per_jabatan = data.reduce((acc, k) => {
+  //   const jabatan = k.JABATAN.trim().toUpperCase();
+  //   acc[jabatan] = (acc[jabatan] || 0) + 1;
+  //   return acc;
+  // }, {});
+  // console.table(
+  //   Object.entries(per_jabatan).map(([jabatan, jumlah]) => ({
+  //     Jabatan: jabatan,
+  //     Jumlah: jumlah,
+  //   })),
+  // );
   // --------------------------------------------------------
 
   // STATISTIK PER ID -------------------------------------
-  const per_prefix = data.reduce((acc, k) => {
-    const prefix = k.ID.trim().charAt(0).toUpperCase();
-    acc[prefix] = (acc[prefix] || 0) + 1;
-    return acc;
-  }, {});
-  console.table(
-    Object.entries(per_prefix).map(([prefix, jumlah]) => ({
-      Prefix_ID: prefix,
-      Jumlah: jumlah,
-    })),
-  );
+  // const per_prefix = data.reduce((acc, k) => {
+  //   const prefix = k.ID.trim().charAt(0).toUpperCase();
+  //   acc[prefix] = (acc[prefix] || 0) + 1;
+  //   return acc;
+  // }, {});
+  // console.table(
+  //   Object.entries(per_prefix).map(([prefix, jumlah]) => ({
+  //     Prefix_ID: prefix,
+  //     Jumlah: jumlah,
+  //   })),
+  // );
   // ------------------------------------------------------
 }
 // ================================================================================================
