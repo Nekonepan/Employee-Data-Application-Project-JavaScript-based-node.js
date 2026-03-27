@@ -1,5 +1,4 @@
 const inquirer = require("inquirer");
-// const fs = require("fs");
 
 const connectDB = require("./config/db");
 console.log("App started");
@@ -8,85 +7,10 @@ connectDB();
 const Employee = require("./models/Employee");
 const DeletedEmployee = require("./models/DeletedEmployee");
 
-// const file_path = "data/data-karyawan.json";
-// const backup_path = "backup/data-karyawan-backup.json";
-// const log_path = "logs/data-terhapus.json";
-
-// let data = read_data();
-
-// if (!fs.existsSync("data")) {
-//   fs.mkdirSync("data");
-// }
-
-// if (!fs.existsSync(file_path)) {
-//   console.warn(`File "${file_path}" tidak ditemukan. Membuat file baru...`);
-//   fs.writeFileSync(file_path, "[]");
-// }
-
-// if (!fs.existsSync("backup")) {
-//   fs.mkdirSync("backup");
-// }
-
-// if (!fs.existsSync(backup_path)) {
-//   console.warn(`File "${backup_path}" tidak ditemukan. Membuat file baru...`);
-//   fs.writeFileSync(backup_path, "[]");
-// }
-
-// if (!fs.existsSync("logs")) {
-//   fs.mkdirSync("logs");
-// }
-
-// if (!fs.existsSync(log_path)) {
-//   console.warn(`File "${log_path}" tidak ditemukan. Membuat file baru...`);
-//   fs.writeFileSync(log_path, "[]");
-// }
-
-// BACA DATA ======================================================================================
-// function read_data() {
-//   try {
-//     if (!fs.existsSync(file_path)) {
-//       fs.writeFileSync(file_path, "[]");
-//       return [];
-//     }
-//     const content = fs.readFileSync(file_path, "utf-8").trim();
-//     return content ? JSON.parse(content) : [];
-//   } catch (err) {
-//     console.error("Gagal membaca atau parsing file JSON:", err.message);
-//     return [];
-//   }
-// }
-// ================================================================================================
-
-// SIMPAN DATA KE FILE ============================================================================
-// function write_data() {
-//   try {
-//     fs.writeFileSync(file_path, JSON.stringify(data, null, 2));
-//     console.log("Data berhasil disimpan ke file.");
-//   } catch (err) {
-//     console.error(`Gagal untuk menyimpan file : ${err.message}`);
-//   }
-// }
-// ================================================================================================
-
-// BACKUP DATA SEBELUMNYAA ========================================================================
-// function backup_data() {
-//   try {
-//     fs.copyFileSync(file_path, backup_path);
-//   } catch (err) {
-//     console.error(`Gagal melakukan backup : ${err.message}`);
-//   }
-// }
-// ================================================================================================
-
 // TAMPILKAN DATA =================================================================================
 async function tampilkan_data() {
   try {
     const data = await Employee.find();
-
-    // if (data.length === 0) {
-    //   console.log("Data masih kosong!");
-    //   return;
-    // }
 
     console.log("========== DATA KARYAWAN ==========");
     console.log("Jumlah Data : ", data.length);
@@ -104,22 +28,6 @@ async function tampilkan_data() {
     console.error("Gagal mengambil data:", err.message);
   }
 }
-
-// function tampilkan_data() {
-//   if (!fs.existsSync(file_path)) {
-//     console.log("File data tidak ditemukan!");
-//     return;
-//   }
-
-//   if (data.length === 0) {
-//     console.log("Data masih kosong!");
-//     return;
-//   }
-
-//   console.log("========== DATA KARYAWAN ==========");
-//   console.log("Jumlah Data : ", data.length);
-//   console.table(data);
-// }
 // ================================================================================================
 
 // TAMBAH DATA BARU ===============================================================================
@@ -247,11 +155,6 @@ async function tambah_data() {
       console.error("Gagal menyimpan ke database:", err.message);
     }
 
-    // data.push(...new_data);
-    // write_data();
-    // backup_data();
-
-    // console.log(`${new_data.length} data berhasil disimpan.`);
   } catch (err) {
     console.error("Terjadi kesalahan saat menambahkan data:", err.message);
   }
@@ -261,11 +164,6 @@ async function tambah_data() {
 
 // CARI DATA KARYAWAN =============================================================================
 async function cari_data() {
-  // if (data.length === 0) {
-  //   console.log("Data masih kosong!");
-  //   return;
-  // }
-
   console.log("========== CARI DATA KARYAWAN ==========");
 
   try {
@@ -313,17 +211,6 @@ async function cari_data() {
       TELP: k.TELP,
     }));
 
-    // let hasil = [];
-    // if (tipe === "ID") {
-    //   hasil = data.filter((karyawan) =>
-    //     karyawan.ID.toLowerCase().includes(keyword_lower)
-    //   );
-    // } else {
-    //   hasil = data.filter((karyawan) =>
-    //     karyawan.NAMA.toLowerCase().includes(keyword_lower)
-    //   );
-    // }
-
     if (hasil.length === 0) {
       console.log("Data tidak ditemukan.");
     } else {
@@ -337,11 +224,6 @@ async function cari_data() {
 
 // SORTING DATA BERDASARKAN ID KARYAWAN ===========================================================
 async function sort_by_id() {
-  // if (data.length === 0) {
-  //   console.log("Data masih kosong!");
-  //   return;
-  // }
-
   console.log("========== URUTKAN DATA BERDASARKAN ID ==========");
 
   try {
@@ -354,8 +236,6 @@ async function sort_by_id() {
       },
     ]);
 
-    // const data_sort = [...data];
-
     const sortOrder = arah === "Ascending (A-Z)" ? 1 : -1;
 
     const results = await Employee.find().sort({ ID: sortOrder });
@@ -367,50 +247,9 @@ async function sort_by_id() {
       TELP: k.TELP,
     }));
 
-    // if (arah === "Ascending (A-Z)") {
-    //   data_sort.sort((a, b) =>
-    //     a.ID.toUpperCase().localeCompare(b.ID.toUpperCase()),
-    //   );
-    // } else {
-    //   data_sort.sort((a, b) =>
-    //     b.ID.toUpperCase().localeCompare(a.ID.toUpperCase()),
-    //   );
-    // }
-
     console.log("\n========== HASIL SORTING ==========");
     console.table(formatted);
-    // console.table(data_sort);
 
-    // const { action } = await inquirer.prompt([
-    //   {
-    //     type: "list",
-    //     name: "action",
-    //     message: "Simpan hasil sorting?",
-    //     choices: ["Simpan hasil sorting ke file", "Jangan simpan"],
-    //   },
-    // ]);
-
-    // if (action === "Simpan hasil sorting ke file") {
-    //   const { confirm_action } = await inquirer.prompt([
-    //     {
-    //       type: "confirm",
-    //       name: "confirm_action",
-    //       message:
-    //         "Apakah anda yakin ingin menyimpan data hasil sorting ke file? (Aksi ini akan menimpa semua data sebelumnya)",
-    //     },
-    //   ]);
-
-    //   if (confirm_action) {
-    //     data = data_sort;
-    //     write_data();
-    //     backup_data();
-    //     console.log("Data telah disimpan ke file.");
-    //   } else {
-    //     console.log("Data tidak disimpan.");
-    //   }
-    // } else {
-    //   console.log("Data tidak disimpan.");
-    // }
   } catch (err) {
     console.error("Terjadi kesalahan saat mengurutkan data:", err.message);
   }
@@ -419,11 +258,6 @@ async function sort_by_id() {
 
 // EDIT DATA KARYAWAN =============================================================================
 async function edit_data() {
-  // if (data.length === 0) {
-  //   console.log("Data masih kosong!");
-  //   return;
-  // }
-
   console.log("========== EDIT DATA KARYAWAN ==========");
 
   try {
@@ -457,9 +291,6 @@ async function edit_data() {
         ID: id_query.trim().toUpperCase(),
       });
 
-      // matches = data.filter(
-      //   (k) => k.ID.toLowerCase() === id_query.trim().toLowerCase()
-      // );
     } else {
       const { name_query } = await inquirer.prompt([
         {
@@ -475,13 +306,9 @@ async function edit_data() {
         },
       ]);
 
-      const key = name_query.trim().toLowerCase();
-
       matches = await Employee.find({
         NAMA: { $regex: name_query, $options: "i" },
       });
-
-      // matches = data.filter((k) => k.NAMA.toLowerCase().includes(key));
     }
 
     if (matches.length === 0) {
@@ -603,16 +430,6 @@ async function edit_data() {
       console.error("Gagal update data:", err.message);
     }
 
-    // data[selected_index] = {
-    //   ID: ID && ID.trim() ? ID.trim().toUpperCase() : current.ID,
-    //   NAMA: NAMA && NAMA.trim() ? NAMA.trim() : current.NAMA,
-    //   JABATAN: JABATAN && JABATAN.trim() ? JABATAN.trim() : current.JABATAN,
-    //   TELP: TELP && TELP.trim() ? TELP.trim() : current.TELP,
-    // };
-
-    // write_data();
-    // backup_data();
-
     console.log("Data karyawan berhasil diperbarui.");
   } catch (err) {
     console.error("Terjadi kesalahan saat mengedit data:", err.message);
@@ -623,11 +440,6 @@ async function edit_data() {
 
 // HAPUS DATA KARYAWAN ============================================================================
 async function delete_data() {
-  // if (data.length === 0) {
-  //   console.log("Data masih kosong!");
-  //   return;
-  // }
-
   console.log("========== HAPUS DATA KARYAWAN ==========");
 
   try {
@@ -656,10 +468,6 @@ async function delete_data() {
         ID: search_id.trim().toUpperCase(),
       });
 
-      // results = data.filter(
-      //   (karyawan) =>
-      //     karyawan.ID.toLowerCase() === search_id.trim().toLowerCase(),
-      // );
     } else {
       const { search_name } = await inquirer.prompt([
         {
@@ -673,10 +481,6 @@ async function delete_data() {
       results = await Employee.find({
         NAMA: { $regex: search_name.trim(), $options: "i" },
       });
-
-      // results = data.filter((karyawan) =>
-      //   karyawan.NAMA.toLowerCase().includes(search_name.trim().toLowerCase()),
-      // );
     }
 
     if (results.length === 0) {
@@ -699,10 +503,6 @@ async function delete_data() {
       ]);
 
       target = results.find((k) => k.ID === pilih);
-
-      // target = results.find(
-      //   (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}` === pilih,
-      // );
     } else {
       target = results[0];
     }
@@ -717,8 +517,6 @@ async function delete_data() {
       },
     ]);
 
-    // console.table([target]);
-
     // KONFIRMASI HAPUS -------------------------------------------------
     const { konfirmasi } = await inquirer.prompt([
       {
@@ -732,10 +530,6 @@ async function delete_data() {
       console.log("Penghapusan dibatalkan.");
       return;
     }
-
-    // HAPUS DARI ARRAY DATA -----------------------------------
-    // data = data.filter((karyawan) => karyawan.ID !== target.ID);
-    // ---------------------------------------------------------
 
     // SIMPAN KE LOG ------------------------------------------
     try {
@@ -753,30 +547,6 @@ async function delete_data() {
       console.error("Gagal proses delete + log:", err.message);
     }
 
-    // let logs = [];
-    // if (fs.existsSync(log_path)) {
-    //   try {
-    //     const log_content = fs.readFileSync(log_path, "utf-8");
-    //     logs = JSON.parse(log_content);
-    //     if (!Array.isArray(logs)) {
-    //       logs = [];
-    //     }
-    //   } catch (err) {
-    //     console.error("Gagal membaca log, membuat log baru.");
-    //   }
-    // }
-    // logs.push({
-    //   ...target,
-    //   deleted_at: new Date().toISOString(),
-    // });
-
-    // fs.writeFileSync(log_path, JSON.stringify(logs, null, 2));
-    // console.log("Data telah ditambahkan ke log penghapusan.");
-    // --------------------------------------------------------
-
-    // write_data();
-    // backup_data();
-
     console.log("Data karyawan berhasil dihapus.");
   } catch (err) {
     console.error("Terjadi kesalahan saat menghapus data:", err.message);
@@ -787,35 +557,11 @@ async function delete_data() {
 
 // MENAMPILKAN STATISTIK KARYAWAN =================================================================
 async function show_statistic() {
-  // if (!fs.existsSync(file_path)) {
-  //   console.log("File data tidak ditemukan!");
-  //   return;
-  // }
-
-  // let data = read_data();
-  // try {
-  //   const content = fs.readFileSync(file_path, "utf-8").trim();
-  //   data = content ? JSON.parse(content) : [];
-  // } catch (err) {
-  //   console.error("Gagal membaca atau parsing file JSON:", err.message);
-  //   return;
-  // }
-
-  // if (data.length === 0) {
-  //   console.log("Data masih kosong!");
-  //   return;
-  // }
-
   console.log("========== STATISTIK DATA KARYAWAN ==========");
   // console.log("Total Data Karyawan:", data.length);
 
   try {
     const data = await Employee.find();
-
-    // if (data.length === 0) {
-    //   console.log("Data masih kosong!");
-    //   return;
-    // }
 
     console.log("Total Data Karyawan:", data.length);
 
@@ -851,98 +597,7 @@ async function show_statistic() {
   } catch (err) {
     console.error("Gagal mengambil statistik:", err.message);
   }
-
-  // STATISTIK PER JABATAN ----------------------------------
-  // const per_jabatan = data.reduce((acc, k) => {
-  //   const jabatan = k.JABATAN.trim().toUpperCase();
-  //   acc[jabatan] = (acc[jabatan] || 0) + 1;
-  //   return acc;
-  // }, {});
-  // console.table(
-  //   Object.entries(per_jabatan).map(([jabatan, jumlah]) => ({
-  //     Jabatan: jabatan,
-  //     Jumlah: jumlah,
-  //   })),
-  // );
-  // --------------------------------------------------------
-
-  // STATISTIK PER ID -------------------------------------
-  // const per_prefix = data.reduce((acc, k) => {
-  //   const prefix = k.ID.trim().charAt(0).toUpperCase();
-  //   acc[prefix] = (acc[prefix] || 0) + 1;
-  //   return acc;
-  // }, {});
-  // console.table(
-  //   Object.entries(per_prefix).map(([prefix, jumlah]) => ({
-  //     Prefix_ID: prefix,
-  //     Jumlah: jumlah,
-  //   })),
-  // );
-  // ------------------------------------------------------
 }
-// ================================================================================================
-
-// RESTORE DATA DARI BACKUP =======================================================================
-// async function restore_data() {
-//   try {
-//     if (!fs.existsSync(backup_path)) {
-//       console.log("File backup tidak ditemukan.");
-//       return;
-//     }
-
-//     let backup_pay_load;
-//     try {
-//       const backup_content = fs.readFileSync(backup_path, "utf-8");
-//       backup_pay_load = JSON.parse(backup_content);
-//       if (!Array.isArray(backup_pay_load)) {
-//         console.error("Format backup tidak valid (harus array!).");
-//         return;
-//       }
-//     } catch (err) {
-//       console.error("Gagal membaca atau mem-parsing file backup:", err.message);
-//       return;
-//     }
-
-//     if (!Array.isArray(backup_pay_load) || backup_pay_load.length === 0) {
-//       console.log("Data backup masih kosong!");
-//       return;
-//     }
-
-//     console.log("========== RESTORE DATA DARI BACKUP ==========");
-//     console.log(`Jumlah data di backup: ${backup_pay_load.length}`);
-//     console.table(backup_pay_load);
-
-// KONFIRMASI RESTORE -------------------------------------------------------------------------------
-// const { restore_confirm } = await inquirer.prompt([
-//   {
-//     type: "confirm",
-//     name: "restore_confirm",
-//     message:
-//       "Apakah anda yakin ingin merestore data dari backup? (Aksi ini akan menimpa semua data utama)",
-//   },
-// ]);
-
-// if (!restore_confirm) {
-//   console.log("Proses restore dibatalkan.");
-//   return;
-// }
-
-// TULIS KE FILE UTAMA ---------------------------------------------
-//   try {
-//     fs.writeFileSync(file_path, JSON.stringify(backup_pay_load, null, 2));
-
-//     data = backup_pay_load;
-
-//     console.log("Data berhasil direstore dari backup.");
-//   } catch (err) {
-//     console.error("Gagal menulis data ke file utama:", err.message);
-//   }
-// } catch (err) {
-//   console.error("Terjadi kesalahan saat restore data:", err.message);
-// }
-// -------------------------------------------------------------------
-// ----------------------------------------------------------------------------------------------------
-// }
 // ================================================================================================
 
 // MENU PILIHAN ===================================================================================
@@ -961,7 +616,6 @@ async function main_menu() {
           "5. Cari Karyawan",
           "6. Edit Data",
           "7. Hapus Data",
-          // "8. Restore Data dari Backup",
           "8. Keluar",
         ],
       },
@@ -1016,13 +670,6 @@ async function main_menu() {
         console.log("\n");
         break;
       }
-
-      // case "8. Restore Data dari Backup": {
-      //   console.log("\n");
-      //   await restore_data();
-      //   console.log("\n");
-      //   break;
-      // }
 
       case "8. Keluar": {
         console.log("\n");
