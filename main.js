@@ -83,10 +83,10 @@ async function tampilkan_data() {
   try {
     const data = await Employee.find();
 
-    if (data.length === 0) {
-      console.log("Data masih kosong!");
-      return;
-    }
+    // if (data.length === 0) {
+    //   console.log("Data masih kosong!");
+    //   return;
+    // }
 
     console.log("========== DATA KARYAWAN ==========");
     console.log("Jumlah Data : ", data.length);
@@ -162,23 +162,27 @@ async function tambah_data() {
           type: "input",
           name: "ID",
           message: "Masukkan ID karyawan :",
-          validate: (val) => {
-            if (!val.trim()) {
+          validate: async (val) => {
+            const input = val.trim().toUpperCase();
+
+            if (!input) {
               return "ID tidak boleh kosong!";
             }
+
             if (!/^[A-Za-z0-9]+$/.test(val)) {
               return "ID hanya boleh huruf & angka!";
             }
-            if (
-              data.some(
-                (karyawan) => karyawan.ID.toUpperCase() === val.toUpperCase(),
-              ) ||
-              new_data.some(
-                (karyawan) => karyawan.ID.toUpperCase() === val.toUpperCase(),
-              )
-            ) {
-              return "ID sudah digunakan!";
+
+            const existsDB = await Employee.findOne({ ID: input });
+            if (existsDB) {
+              return "ID sudah digunakan di database!";
             }
+
+            const existsLocal = new_data.some((k) => k.ID === input);
+            if (existsLocal) {
+              return "ID sudah digunakan di input ini!"; 
+            }
+
             return true;
           },
         },
@@ -257,10 +261,10 @@ async function tambah_data() {
 
 // CARI DATA KARYAWAN =============================================================================
 async function cari_data() {
-  if (data.length === 0) {
-    console.log("Data masih kosong!");
-    return;
-  }
+  // if (data.length === 0) {
+  //   console.log("Data masih kosong!");
+  //   return;
+  // }
 
   console.log("========== CARI DATA KARYAWAN ==========");
 
@@ -288,10 +292,6 @@ async function cari_data() {
         },
       },
     ]);
-    // ------------------------------------------------
-
-    // KATA KUNCI DI LOWERCASE ------------------------
-    const keyword_lower = keyword.trim().toLowerCase();
     // ------------------------------------------------
 
     let hasil = [];
@@ -337,10 +337,10 @@ async function cari_data() {
 
 // SORTING DATA BERDASARKAN ID KARYAWAN ===========================================================
 async function sort_by_id() {
-  if (data.length === 0) {
-    console.log("Data masih kosong!");
-    return;
-  }
+  // if (data.length === 0) {
+  //   console.log("Data masih kosong!");
+  //   return;
+  // }
 
   console.log("========== URUTKAN DATA BERDASARKAN ID ==========");
 
@@ -419,10 +419,10 @@ async function sort_by_id() {
 
 // EDIT DATA KARYAWAN =============================================================================
 async function edit_data() {
-  if (data.length === 0) {
-    console.log("Data masih kosong!");
-    return;
-  }
+  // if (data.length === 0) {
+  //   console.log("Data masih kosong!");
+  //   return;
+  // }
 
   console.log("========== EDIT DATA KARYAWAN ==========");
 
@@ -572,10 +572,10 @@ async function edit_data() {
     };
 
     console.log("Data sebelumnya : \n");
-    console.log(console.table(formatted));
+    console.table(formatted);
 
     console.log("Data setelah di edit : \n");
-    console.log(console.table([updated]));
+    console.table([updated]);
 
     // KONFIRMASI SIMPAN ---------------------------------------------------
     const { confirm } = await inquirer.prompt([
@@ -655,7 +655,7 @@ async function delete_data() {
       results = await Employee.find({
         ID: search_id.trim().toUpperCase(),
       });
-      
+
       // results = data.filter(
       //   (karyawan) =>
       //     karyawan.ID.toLowerCase() === search_id.trim().toLowerCase(),
@@ -673,7 +673,7 @@ async function delete_data() {
       results = await Employee.find({
         NAMA: { $regex: search_name.trim(), $options: "i" },
       });
-      
+
       // results = data.filter((karyawan) =>
       //   karyawan.NAMA.toLowerCase().includes(search_name.trim().toLowerCase()),
       // );
@@ -699,7 +699,7 @@ async function delete_data() {
       ]);
 
       target = results.find((k) => k.ID === pilih);
-      
+
       // target = results.find(
       //   (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}` === pilih,
       // );
@@ -716,7 +716,7 @@ async function delete_data() {
         TELP: target.TELP,
       },
     ]);
-    
+
     // console.table([target]);
 
     // KONFIRMASI HAPUS -------------------------------------------------
@@ -732,10 +732,6 @@ async function delete_data() {
       console.log("Penghapusan dibatalkan.");
       return;
     }
-
-    // DELETE KE DATABASE ----------------------
-    await Employee.deleteOne({ ID: target.ID });
-    // -----------------------------------------
 
     // HAPUS DARI ARRAY DATA -----------------------------------
     // data = data.filter((karyawan) => karyawan.ID !== target.ID);
@@ -756,7 +752,7 @@ async function delete_data() {
     } catch (err) {
       console.error("Gagal proses delete + log:", err.message);
     }
-    
+
     // let logs = [];
     // if (fs.existsSync(log_path)) {
     //   try {
@@ -812,14 +808,14 @@ async function show_statistic() {
 
   console.log("========== STATISTIK DATA KARYAWAN ==========");
   // console.log("Total Data Karyawan:", data.length);
-  
+
   try {
     const data = await Employee.find();
 
-    if (data.length === 0) {
-      console.log("Data masih kosong!");
-      return;
-    }
+    // if (data.length === 0) {
+    //   console.log("Data masih kosong!");
+    //   return;
+    // }
 
     console.log("Total Data Karyawan:", data.length);
 
@@ -852,8 +848,7 @@ async function show_statistic() {
       })),
     );
     // ------------------------------------------------------
-
-  } catch {
+  } catch (err) {
     console.error("Gagal mengambil statistik:", err.message);
   }
 
@@ -917,36 +912,36 @@ async function show_statistic() {
 //     console.log(`Jumlah data di backup: ${backup_pay_load.length}`);
 //     console.table(backup_pay_load);
 
-    // KONFIRMASI RESTORE -------------------------------------------------------------------------------
-    // const { restore_confirm } = await inquirer.prompt([
-    //   {
-    //     type: "confirm",
-    //     name: "restore_confirm",
-    //     message:
-    //       "Apakah anda yakin ingin merestore data dari backup? (Aksi ini akan menimpa semua data utama)",
-    //   },
-    // ]);
+// KONFIRMASI RESTORE -------------------------------------------------------------------------------
+// const { restore_confirm } = await inquirer.prompt([
+//   {
+//     type: "confirm",
+//     name: "restore_confirm",
+//     message:
+//       "Apakah anda yakin ingin merestore data dari backup? (Aksi ini akan menimpa semua data utama)",
+//   },
+// ]);
 
-    // if (!restore_confirm) {
-    //   console.log("Proses restore dibatalkan.");
-    //   return;
-    // }
+// if (!restore_confirm) {
+//   console.log("Proses restore dibatalkan.");
+//   return;
+// }
 
-    // TULIS KE FILE UTAMA ---------------------------------------------
-  //   try {
-  //     fs.writeFileSync(file_path, JSON.stringify(backup_pay_load, null, 2));
+// TULIS KE FILE UTAMA ---------------------------------------------
+//   try {
+//     fs.writeFileSync(file_path, JSON.stringify(backup_pay_load, null, 2));
 
-  //     data = backup_pay_load;
+//     data = backup_pay_load;
 
-  //     console.log("Data berhasil direstore dari backup.");
-  //   } catch (err) {
-  //     console.error("Gagal menulis data ke file utama:", err.message);
-  //   }
-  // } catch (err) {
-  //   console.error("Terjadi kesalahan saat restore data:", err.message);
-  // }
-  // -------------------------------------------------------------------
-  // ----------------------------------------------------------------------------------------------------
+//     console.log("Data berhasil direstore dari backup.");
+//   } catch (err) {
+//     console.error("Gagal menulis data ke file utama:", err.message);
+//   }
+// } catch (err) {
+//   console.error("Terjadi kesalahan saat restore data:", err.message);
+// }
+// -------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------
 // }
 // ================================================================================================
 
