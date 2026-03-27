@@ -6,6 +6,7 @@ connectDB();
 
 const Employee = require("./models/Employee");
 const DeletedEmployee = require("./models/DeletedEmployee");
+const EmployeeLog = require("./models/EmployeeLog");
 
 // TAMPILKAN DATA =================================================================================
 async function tampilkan_data() {
@@ -153,6 +154,16 @@ async function tambah_data() {
       console.log(`${new_data.length} data berhasil disimpan ke database.`);
     } catch (err) {
       console.error("Gagal menyimpan ke database:", err.message);
+    }
+
+    await Employee.insertMany(new_data);
+
+    for (const item of new_data) {
+      await EmployeeLog.create({
+        action: "CREATE",
+        data_before: null,
+        data_after: item,
+      });
     }
 
   } catch (err) {
@@ -431,6 +442,13 @@ async function edit_data() {
     }
 
     console.log("Data karyawan berhasil diperbarui.");
+
+    await EmployeeLog.create({
+      action: "UPDATE",
+      data_before: current,
+      data_after: updated,
+    });
+
   } catch (err) {
     console.error("Terjadi kesalahan saat mengedit data:", err.message);
   }
@@ -539,6 +557,14 @@ async function delete_data() {
         JABATAN: target.JABATAN,
         TELP: target.TELP,
       });
+
+      await EmployeeLog.create({
+        action: "DELETE",
+        data_before: target,
+        data_after: null,
+      });
+
+      await Employee.deleteOne({ ID: target.ID });
 
       await Employee.deleteOne({ ID: target.ID });
 
