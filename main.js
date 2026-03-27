@@ -5,6 +5,8 @@ const connectDB = require("./config/db");
 console.log("App started");
 connectDB();
 
+const Employee = require("./models/Employee");
+
 const file_path = "data/data-karyawan.json";
 const backup_path = "backup/data-karyawan-backup.json";
 const log_path = "logs/data-terhapus.json";
@@ -76,8 +78,6 @@ function backup_data() {
 // ================================================================================================
 
 // TAMPILKAN DATA =================================================================================
-const Employee = require("./models/Employee");
-
 async function tampilkan_data() {
   try {
     const data = await Employee.find();
@@ -293,8 +293,6 @@ async function cari_data() {
     const keyword_lower = keyword.trim().toLowerCase();
     // ------------------------------------------------
 
-    const Employee = require("./models/Employee");
-
     let hasil = [];
 
     if (tipe === "ID") {
@@ -355,51 +353,63 @@ async function sort_by_id() {
       },
     ]);
 
-    const data_sort = [...data];
+    // const data_sort = [...data];
 
-    if (arah === "Ascending (A-Z)") {
-      data_sort.sort((a, b) =>
-        a.ID.toUpperCase().localeCompare(b.ID.toUpperCase()),
-      );
-    } else {
-      data_sort.sort((a, b) =>
-        b.ID.toUpperCase().localeCompare(a.ID.toUpperCase()),
-      );
-    }
+    const sortOrder = arah === "Ascending (A-Z)" ? 1 : -1;
+
+    const results = await Employee.find().sort({ ID: sortOrder });
+
+    const formatted = results.map((k) => ({
+      ID: k.ID,
+      NAMA: k.NAMA,
+      JABATAN: k.JABATAN,
+      TELP: k.TELP,
+    }));
+
+    // if (arah === "Ascending (A-Z)") {
+    //   data_sort.sort((a, b) =>
+    //     a.ID.toUpperCase().localeCompare(b.ID.toUpperCase()),
+    //   );
+    // } else {
+    //   data_sort.sort((a, b) =>
+    //     b.ID.toUpperCase().localeCompare(a.ID.toUpperCase()),
+    //   );
+    // }
 
     console.log("\n========== HASIL SORTING ==========");
-    console.table(data_sort);
+    console.table(formatted);
+    // console.table(data_sort);
 
-    const { action } = await inquirer.prompt([
-      {
-        type: "list",
-        name: "action",
-        message: "Simpan hasil sorting?",
-        choices: ["Simpan hasil sorting ke file", "Jangan simpan"],
-      },
-    ]);
+    // const { action } = await inquirer.prompt([
+    //   {
+    //     type: "list",
+    //     name: "action",
+    //     message: "Simpan hasil sorting?",
+    //     choices: ["Simpan hasil sorting ke file", "Jangan simpan"],
+    //   },
+    // ]);
 
-    if (action === "Simpan hasil sorting ke file") {
-      const { confirm_action } = await inquirer.prompt([
-        {
-          type: "confirm",
-          name: "confirm_action",
-          message:
-            "Apakah anda yakin ingin menyimpan data hasil sorting ke file? (Aksi ini akan menimpa semua data sebelumnya)",
-        },
-      ]);
+    // if (action === "Simpan hasil sorting ke file") {
+    //   const { confirm_action } = await inquirer.prompt([
+    //     {
+    //       type: "confirm",
+    //       name: "confirm_action",
+    //       message:
+    //         "Apakah anda yakin ingin menyimpan data hasil sorting ke file? (Aksi ini akan menimpa semua data sebelumnya)",
+    //     },
+    //   ]);
 
-      if (confirm_action) {
-        data = data_sort;
-        write_data();
-        backup_data();
-        console.log("Data telah disimpan ke file.");
-      } else {
-        console.log("Data tidak disimpan.");
-      }
-    } else {
-      console.log("Data tidak disimpan.");
-    }
+    //   if (confirm_action) {
+    //     data = data_sort;
+    //     write_data();
+    //     backup_data();
+    //     console.log("Data telah disimpan ke file.");
+    //   } else {
+    //     console.log("Data tidak disimpan.");
+    //   }
+    // } else {
+    //   console.log("Data tidak disimpan.");
+    // }
   } catch (err) {
     console.error("Terjadi kesalahan saat mengurutkan data:", err.message);
   }
@@ -412,8 +422,6 @@ async function edit_data() {
     console.log("Data masih kosong!");
     return;
   }
-
-  const Employee = require("./models/Employee");
 
   console.log("========== EDIT DATA KARYAWAN ==========");
 
@@ -643,10 +651,14 @@ async function delete_data() {
         },
       ]);
 
-      results = data.filter(
-        (karyawan) =>
-          karyawan.ID.toLowerCase() === search_id.trim().toLowerCase(),
-      );
+      results = await Employee.find({
+        ID: search_id.trim().toUpperCase(),
+      });
+      
+      // results = data.filter(
+      //   (karyawan) =>
+      //     karyawan.ID.toLowerCase() === search_id.trim().toLowerCase(),
+      // );
     } else {
       const { search_name } = await inquirer.prompt([
         {
@@ -657,9 +669,13 @@ async function delete_data() {
         },
       ]);
 
-      results = data.filter((karyawan) =>
-        karyawan.NAMA.toLowerCase().includes(search_name.trim().toLowerCase()),
-      );
+      results = await Employee.find({
+        NAMA: { $regex: search_name.trim(), $options: "i" },
+      });
+      
+      // results = data.filter((karyawan) =>
+      //   karyawan.NAMA.toLowerCase().includes(search_name.trim().toLowerCase()),
+      // );
     }
 
     if (results.length === 0) {
@@ -680,15 +696,27 @@ async function delete_data() {
           ),
         },
       ]);
-      target = results.find(
-        (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}` === pilih,
-      );
+
+      target = results.find((k) => k.ID === pilih);
+      
+      // target = results.find(
+      //   (k) => `${k.ID} | ${k.NAMA} | ${k.JABATAN} | ${k.TELP}` === pilih,
+      // );
     } else {
       target = results[0];
     }
     // ------------------------------------------------------------------
 
-    console.table([target]);
+    console.table([
+      {
+        ID: target.ID,
+        NAMA: target.NAMA,
+        JABATAN: target.JABATAN,
+        TELP: target.TELP,
+      },
+    ]);
+    
+    // console.table([target]);
 
     // KONFIRMASI HAPUS -------------------------------------------------
     const { konfirmasi } = await inquirer.prompt([
@@ -704,8 +732,12 @@ async function delete_data() {
       return;
     }
 
+    // DELETE KE DATABASE ----------------------
+    await Employee.deleteOne({ ID: target.ID });
+    // -----------------------------------------
+
     // HAPUS DARI ARRAY DATA -----------------------------------
-    data = data.filter((karyawan) => karyawan.ID !== target.ID);
+    // data = data.filter((karyawan) => karyawan.ID !== target.ID);
     // ---------------------------------------------------------
 
     // SIMPAN KE LOG ------------------------------------------
@@ -730,8 +762,8 @@ async function delete_data() {
     console.log("Data telah ditambahkan ke log penghapusan.");
     // --------------------------------------------------------
 
-    write_data();
-    backup_data();
+    // write_data();
+    // backup_data();
 
     console.log("Data karyawan berhasil dihapus.");
   } catch (err) {
