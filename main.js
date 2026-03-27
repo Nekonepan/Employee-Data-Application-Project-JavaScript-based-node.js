@@ -1,80 +1,81 @@
 const inquirer = require("inquirer");
-const fs = require("fs");
+// const fs = require("fs");
 
 const connectDB = require("./config/db");
 console.log("App started");
 connectDB();
 
 const Employee = require("./models/Employee");
+const DeletedEmployee = require("./models/DeletedEmployee");
 
-const file_path = "data/data-karyawan.json";
-const backup_path = "backup/data-karyawan-backup.json";
-const log_path = "logs/data-terhapus.json";
+// const file_path = "data/data-karyawan.json";
+// const backup_path = "backup/data-karyawan-backup.json";
+// const log_path = "logs/data-terhapus.json";
 
-let data = read_data();
+// let data = read_data();
 
-if (!fs.existsSync("data")) {
-  fs.mkdirSync("data");
-}
+// if (!fs.existsSync("data")) {
+//   fs.mkdirSync("data");
+// }
 
-if (!fs.existsSync(file_path)) {
-  console.warn(`File "${file_path}" tidak ditemukan. Membuat file baru...`);
-  fs.writeFileSync(file_path, "[]");
-}
+// if (!fs.existsSync(file_path)) {
+//   console.warn(`File "${file_path}" tidak ditemukan. Membuat file baru...`);
+//   fs.writeFileSync(file_path, "[]");
+// }
 
-if (!fs.existsSync("backup")) {
-  fs.mkdirSync("backup");
-}
+// if (!fs.existsSync("backup")) {
+//   fs.mkdirSync("backup");
+// }
 
-if (!fs.existsSync(backup_path)) {
-  console.warn(`File "${backup_path}" tidak ditemukan. Membuat file baru...`);
-  fs.writeFileSync(backup_path, "[]");
-}
+// if (!fs.existsSync(backup_path)) {
+//   console.warn(`File "${backup_path}" tidak ditemukan. Membuat file baru...`);
+//   fs.writeFileSync(backup_path, "[]");
+// }
 
-if (!fs.existsSync("logs")) {
-  fs.mkdirSync("logs");
-}
+// if (!fs.existsSync("logs")) {
+//   fs.mkdirSync("logs");
+// }
 
-if (!fs.existsSync(log_path)) {
-  console.warn(`File "${log_path}" tidak ditemukan. Membuat file baru...`);
-  fs.writeFileSync(log_path, "[]");
-}
+// if (!fs.existsSync(log_path)) {
+//   console.warn(`File "${log_path}" tidak ditemukan. Membuat file baru...`);
+//   fs.writeFileSync(log_path, "[]");
+// }
 
 // BACA DATA ======================================================================================
-function read_data() {
-  try {
-    if (!fs.existsSync(file_path)) {
-      fs.writeFileSync(file_path, "[]");
-      return [];
-    }
-    const content = fs.readFileSync(file_path, "utf-8").trim();
-    return content ? JSON.parse(content) : [];
-  } catch (err) {
-    console.error("Gagal membaca atau parsing file JSON:", err.message);
-    return [];
-  }
-}
+// function read_data() {
+//   try {
+//     if (!fs.existsSync(file_path)) {
+//       fs.writeFileSync(file_path, "[]");
+//       return [];
+//     }
+//     const content = fs.readFileSync(file_path, "utf-8").trim();
+//     return content ? JSON.parse(content) : [];
+//   } catch (err) {
+//     console.error("Gagal membaca atau parsing file JSON:", err.message);
+//     return [];
+//   }
+// }
 // ================================================================================================
 
 // SIMPAN DATA KE FILE ============================================================================
-function write_data() {
-  try {
-    fs.writeFileSync(file_path, JSON.stringify(data, null, 2));
-    console.log("Data berhasil disimpan ke file.");
-  } catch (err) {
-    console.error(`Gagal untuk menyimpan file : ${err.message}`);
-  }
-}
+// function write_data() {
+//   try {
+//     fs.writeFileSync(file_path, JSON.stringify(data, null, 2));
+//     console.log("Data berhasil disimpan ke file.");
+//   } catch (err) {
+//     console.error(`Gagal untuk menyimpan file : ${err.message}`);
+//   }
+// }
 // ================================================================================================
 
 // BACKUP DATA SEBELUMNYAA ========================================================================
-function backup_data() {
-  try {
-    fs.copyFileSync(file_path, backup_path);
-  } catch (err) {
-    console.error(`Gagal melakukan backup : ${err.message}`);
-  }
-}
+// function backup_data() {
+//   try {
+//     fs.copyFileSync(file_path, backup_path);
+//   } catch (err) {
+//     console.error(`Gagal melakukan backup : ${err.message}`);
+//   }
+// }
 // ================================================================================================
 
 // TAMPILKAN DATA =================================================================================
@@ -622,10 +623,10 @@ async function edit_data() {
 
 // HAPUS DATA KARYAWAN ============================================================================
 async function delete_data() {
-  if (data.length === 0) {
-    console.log("Data masih kosong!");
-    return;
-  }
+  // if (data.length === 0) {
+  //   console.log("Data masih kosong!");
+  //   return;
+  // }
 
   console.log("========== HAPUS DATA KARYAWAN ==========");
 
@@ -741,25 +742,40 @@ async function delete_data() {
     // ---------------------------------------------------------
 
     // SIMPAN KE LOG ------------------------------------------
-    let logs = [];
-    if (fs.existsSync(log_path)) {
-      try {
-        const log_content = fs.readFileSync(log_path, "utf-8");
-        logs = JSON.parse(log_content);
-        if (!Array.isArray(logs)) {
-          logs = [];
-        }
-      } catch (err) {
-        console.error("Gagal membaca log, membuat log baru.");
-      }
-    }
-    logs.push({
-      ...target,
-      deleted_at: new Date().toISOString(),
-    });
+    try {
+      await DeletedEmployee.create({
+        ID: target.ID,
+        NAMA: target.NAMA,
+        JABATAN: target.JABATAN,
+        TELP: target.TELP,
+      });
 
-    fs.writeFileSync(log_path, JSON.stringify(logs, null, 2));
-    console.log("Data telah ditambahkan ke log penghapusan.");
+      await Employee.deleteOne({ ID: target.ID });
+
+      console.log("Data berhasil dihapus & disimpan ke log.");
+    } catch (err) {
+      console.error("Gagal proses delete + log:", err.message);
+    }
+    
+    // let logs = [];
+    // if (fs.existsSync(log_path)) {
+    //   try {
+    //     const log_content = fs.readFileSync(log_path, "utf-8");
+    //     logs = JSON.parse(log_content);
+    //     if (!Array.isArray(logs)) {
+    //       logs = [];
+    //     }
+    //   } catch (err) {
+    //     console.error("Gagal membaca log, membuat log baru.");
+    //   }
+    // }
+    // logs.push({
+    //   ...target,
+    //   deleted_at: new Date().toISOString(),
+    // });
+
+    // fs.writeFileSync(log_path, JSON.stringify(logs, null, 2));
+    // console.log("Data telah ditambahkan ke log penghapusan.");
     // --------------------------------------------------------
 
     // write_data();
@@ -872,66 +888,66 @@ async function show_statistic() {
 // ================================================================================================
 
 // RESTORE DATA DARI BACKUP =======================================================================
-async function restore_data() {
-  try {
-    if (!fs.existsSync(backup_path)) {
-      console.log("File backup tidak ditemukan.");
-      return;
-    }
+// async function restore_data() {
+//   try {
+//     if (!fs.existsSync(backup_path)) {
+//       console.log("File backup tidak ditemukan.");
+//       return;
+//     }
 
-    let backup_pay_load;
-    try {
-      const backup_content = fs.readFileSync(backup_path, "utf-8");
-      backup_pay_load = JSON.parse(backup_content);
-      if (!Array.isArray(backup_pay_load)) {
-        console.error("Format backup tidak valid (harus array!).");
-        return;
-      }
-    } catch (err) {
-      console.error("Gagal membaca atau mem-parsing file backup:", err.message);
-      return;
-    }
+//     let backup_pay_load;
+//     try {
+//       const backup_content = fs.readFileSync(backup_path, "utf-8");
+//       backup_pay_load = JSON.parse(backup_content);
+//       if (!Array.isArray(backup_pay_load)) {
+//         console.error("Format backup tidak valid (harus array!).");
+//         return;
+//       }
+//     } catch (err) {
+//       console.error("Gagal membaca atau mem-parsing file backup:", err.message);
+//       return;
+//     }
 
-    if (!Array.isArray(backup_pay_load) || backup_pay_load.length === 0) {
-      console.log("Data backup masih kosong!");
-      return;
-    }
+//     if (!Array.isArray(backup_pay_load) || backup_pay_load.length === 0) {
+//       console.log("Data backup masih kosong!");
+//       return;
+//     }
 
-    console.log("========== RESTORE DATA DARI BACKUP ==========");
-    console.log(`Jumlah data di backup: ${backup_pay_load.length}`);
-    console.table(backup_pay_load);
+//     console.log("========== RESTORE DATA DARI BACKUP ==========");
+//     console.log(`Jumlah data di backup: ${backup_pay_load.length}`);
+//     console.table(backup_pay_load);
 
     // KONFIRMASI RESTORE -------------------------------------------------------------------------------
-    const { restore_confirm } = await inquirer.prompt([
-      {
-        type: "confirm",
-        name: "restore_confirm",
-        message:
-          "Apakah anda yakin ingin merestore data dari backup? (Aksi ini akan menimpa semua data utama)",
-      },
-    ]);
+    // const { restore_confirm } = await inquirer.prompt([
+    //   {
+    //     type: "confirm",
+    //     name: "restore_confirm",
+    //     message:
+    //       "Apakah anda yakin ingin merestore data dari backup? (Aksi ini akan menimpa semua data utama)",
+    //   },
+    // ]);
 
-    if (!restore_confirm) {
-      console.log("Proses restore dibatalkan.");
-      return;
-    }
+    // if (!restore_confirm) {
+    //   console.log("Proses restore dibatalkan.");
+    //   return;
+    // }
 
     // TULIS KE FILE UTAMA ---------------------------------------------
-    try {
-      fs.writeFileSync(file_path, JSON.stringify(backup_pay_load, null, 2));
+  //   try {
+  //     fs.writeFileSync(file_path, JSON.stringify(backup_pay_load, null, 2));
 
-      data = backup_pay_load;
+  //     data = backup_pay_load;
 
-      console.log("Data berhasil direstore dari backup.");
-    } catch (err) {
-      console.error("Gagal menulis data ke file utama:", err.message);
-    }
-  } catch (err) {
-    console.error("Terjadi kesalahan saat restore data:", err.message);
-  }
+  //     console.log("Data berhasil direstore dari backup.");
+  //   } catch (err) {
+  //     console.error("Gagal menulis data ke file utama:", err.message);
+  //   }
+  // } catch (err) {
+  //   console.error("Terjadi kesalahan saat restore data:", err.message);
+  // }
   // -------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------
-}
+// }
 // ================================================================================================
 
 // MENU PILIHAN ===================================================================================
@@ -950,8 +966,8 @@ async function main_menu() {
           "5. Cari Karyawan",
           "6. Edit Data",
           "7. Hapus Data",
-          "8. Restore Data dari Backup",
-          "9. Keluar",
+          // "8. Restore Data dari Backup",
+          "8. Keluar",
         ],
       },
     ]);
@@ -1006,14 +1022,14 @@ async function main_menu() {
         break;
       }
 
-      case "8. Restore Data dari Backup": {
-        console.log("\n");
-        await restore_data();
-        console.log("\n");
-        break;
-      }
+      // case "8. Restore Data dari Backup": {
+      //   console.log("\n");
+      //   await restore_data();
+      //   console.log("\n");
+      //   break;
+      // }
 
-      case "9. Keluar": {
+      case "8. Keluar": {
         console.log("\n");
         console.log("Keluar dari program.");
         process.exit();
